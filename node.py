@@ -88,6 +88,23 @@ def full_chain():
     return jsonify(response), 200
 
 
+@app.route('/nodes/resolve', methods=['GET'])
+def consensus():
+    replaced = bc.resolve_conflicts()
+
+    if replaced:
+        response = {
+            'message': 'Our chain was replaced',
+            'new_chain': bc.chain
+        }
+    else:
+        response = {
+            'message': 'Our chain is authoritative',
+            'chain': bc.chain
+        }
+
+    return jsonify(response), 200
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
 
