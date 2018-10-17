@@ -44,8 +44,6 @@ def mine():
     return jsonify(response), 200
 
 
-
-
 @app.route('/transactions/new', methods=['POST'])
 def new_transaction():
     values = request.get_json()
@@ -60,6 +58,23 @@ def new_transaction():
 
     response = {'message': f'Transaction will be added to Block {index}'}
 
+    return jsonify(response), 201
+
+
+@app.route('/nodes/register', methods=['POST'])
+def register_node():
+    values = request.get_json()
+    nodes = values.get('nodes')
+    if nodes is None:
+        return "Error: Please supply a valid list of nodes", 400
+
+    for node in nodes:
+        bc.register_node(node)
+
+    response = {
+        'message': 'New nodes have been added',
+        'total_nodes': list(bc.nodes),
+    }
 
     return jsonify(response), 201
 

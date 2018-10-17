@@ -84,21 +84,22 @@ class BlockChain(object):
         """
 
         proof = 0
-        while self.valid_proof(last_proof, proof) is False:
+        previous_hash = self.hash(self.chain[-1])
+        while self.valid_proof(previous_hash, proof) is False:
             proof += 1
 
         return proof
 
     @staticmethod
-    def valid_proof(last_proof, proof):
+    def valid_proof(previous_hash, proof):
         """
-        Validates the Proof: Does hash(last_proof, proof) contain 4 leading zeroes?
-        :param last_proof: <int> Previous Proof
+        Validates the Proof: Does hash(last_hash, proof) contain 4 leading zeroes?
+        :param previous_hash: <str> the hash of the last valid block
         :param proof: <int> Current Proof
         :return: <bool> True if correct, False if not.
         """
 
-        guess = f'{last_proof}{proof}'.encode()
+        guess = f'{previous_hash}{proof}'.encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
 
         return guess_hash[:4] == "0000"
@@ -113,6 +114,37 @@ class BlockChain(object):
         parsed_url = urlparse(address)
         self.nodes.add(parsed_url.netloc)
 
+    def valid_chain(self, chain):
+        """
+        Determine if a given blockchain is valid
+        :param chain: <list> A blockchain
+        :return: <bool> True if valid, False if not
+        """
+
+        last_block = chain[0]
+        current_index = 1
+
+        while current_index < len(chain):
+            block = chain[current_index]
+            print(f'{last_block}')
+            print(f'{block}')
+            print("\n-----------\n")
+
+            # calculate once the previous hash
+            previous_hash = self.hash(last_block)
+
+            # Check that the hash of the block is correct
+            if block['previous_hash'] != previous_hash:
+                return False
+
+            # Check that the Proof of Work is correct
+            if not self.valid_proof(previous_hash, block['proof']):
+                return False
+
+            last_block = block
+            current_index += 1
+
+        return True
 
 
 
